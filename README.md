@@ -66,7 +66,7 @@ Say we have a cloud encryption function `encrypt_with_key(key, value)` and a dec
 ```ruby
 jwt = SecureJwt.encrypt("foo", "bar", master_key: MASTER_KEY) {|value,key| encrypt_with_key key, value }
 
-SecureJwt.decrypt(jwt, "bar", master_key: YOUR_VERY_RANDOM_MASTER_KEY) { |value, key| decrypt_with_key key, value }
+SecureJwt.decrypt(jwt, "bar", master_key: MASTER_KEY) { |value, key| decrypt_with_key key, value }
 ```
 
 And that's it. Simple as that.
