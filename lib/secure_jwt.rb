@@ -53,7 +53,8 @@ module SecureJwt
       ret = encode_jwt encrypted_payload, {
         data_key: data_key[:encrypted],
         iv: iv,
-        auth_tag: auth_tag
+        auth_tag: auth_tag,
+        expires: options[:expires]&.to_i
       }
 
       first_error ? raise(first_error) : ret
@@ -98,24 +99,25 @@ module SecureJwt
       headers[:tag] = Base64.urlsafe_encode64(options[:auth_tag]) if options[:auth_tag]
 
       formatted_payload = { 
-        "payload" => Base64.urlsafe_encode64(encrypted_payload) 
-      }
+        "data" => Base64.urlsafe_encode64(encrypted_payload),
+        "exp" => options[:expires]
+      }.compact
 
       JWT.encode formatted_payload, signing_key, jwt_algorithm, headers 
     end
 
     def decode_jwt(jwt_token)
       begin
-        payload, header = JWT.decode jwt_token, signing_key, !!jwt_algorithm, algorithm: jwt_algorithm
+        payload, header = JWT.decode jwt_token, signing_key, !!jwt_algorithm, algorithm: jwt_algorithm, verify_expiration: true
 
         %w(data_key iv tag).each do |key| 
           header[key] = Base64.urlsafe_decode64 header[key] rescue ""
         end
 
-        return Base64.urlsafe_decode64(payload["payload"]), header.transform_keys(&:to_sym)
+        return Base64.urlsafe_decode64(payload["data"]), header.transform_keys(&:to_sym)
       rescue JWT::VerificationError, JWT::IncorrectAlgorithm => e
         self.first_error = e
-        return {"payload": nil}, { }
+        return {"data": nil}, { }
       end
     end
 

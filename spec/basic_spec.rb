@@ -40,6 +40,13 @@ RSpec.describe SecureJwt do
     end
   end
 
+  context "expiration" do
+    it "expires" do
+      jwt = SecureJwt.encrypt "foo", "bar", expires: Time.now - 60
+      expect {SecureJwt.decrypt(jwt, "bar")}.to raise_error(JWT::ExpiredSignature)
+    end
+  end
+
   context "configs" do
     after(:each) { SecureJwt.config.send(:clear!) }
 
