@@ -8,6 +8,7 @@ This library was written to avoid exiting methods early in case of incorrect sig
 
 This library follows an encrypt-then-sign approach to doing encryption and signing. It also supports a wide variety of encryption mechanisms, but uses AES-256-GCM by default.
 
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -71,6 +72,13 @@ SecureJwt.decrypt(jwt, "bar", master_key: MASTER_KEY) { |value, key| decrypt_wit
 
 And that's it. Simple as that.
 
+
+## Why not JWE?
+Truthfully? Because there wasn't a recently-updated implementation for Ruby and implementing the standard was beyond the scope for the need.
+
+More officially? Because any JWE implemenation would be limited by the implementation's need to run the decryption for the Content-Encryption Key itself. While this is fine, it is better to make use of an HSM to perform this task, and that process is going to vary dependent on the particulars of your architecture. 
+
+This library was written to give the user power to implement the encryption / decryption of the content-key themselves. They can then make use of differing cloud systems to perform this task in the most secure manner possible (should they choose to).
 
 ## Development
 
