@@ -1,14 +1,14 @@
 PATH
   remote: .
   specs:
-    secure_jwt (0.1.0)
+    secure_jwt (0.1.0.1)
       jwt
 
 GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.4.4)
-    jwt (1.5.6)
+    jwt (2.2.2)
     rake (10.5.0)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
