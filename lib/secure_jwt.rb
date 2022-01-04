@@ -30,13 +30,14 @@ module SecureJwt
   class JwtTokenImpl
     def initialize(signing_key, options = {})
       @jwt_algorithm = options[:signing_algorithm] || DEFAULT_ALGORITHMS[:jwt]
-      @jwt_algorithm = nil unless signing_key
+      @jwt_algorithm = "none" unless signing_key
 
-      @signing_key = signing_key
+      @signing_key = signing_key || nil
 
       @data_algorithm = options[:data_algorithm] || DEFAULT_ALGORITHMS[:data]
 
       @master_key = options[:master_key] || SecureJwt.config.master_key || "none"
+      @include_master_key = options[:include_master_key] || false
     end
 
     def encrypt(payload, options = {}, &data_key_encryptor)
@@ -82,6 +83,7 @@ module SecureJwt
     attr_reader :jwt_algorithm
     attr_reader :data_algorithm
     attr_reader :master_key
+    attr_reader :include_master_key
 
     attr_reader :first_error
 
@@ -92,9 +94,10 @@ module SecureJwt
     def encode_jwt(encrypted_payload, options = {})
       headers = { 
         data_key: Base64.urlsafe_encode64(options[:data_key]), 
-        key: master_key, 
         iv: Base64.urlsafe_encode64(options[:iv]),
       }
+
+      headers[:master_key] = master_key if include_master_key
 
       headers[:tag] = Base64.urlsafe_encode64(options[:auth_tag]) if options[:auth_tag]
 
@@ -108,7 +111,7 @@ module SecureJwt
 
     def decode_jwt(jwt_token)
       begin
-        payload, header = JWT.decode jwt_token, signing_key, !!jwt_algorithm, algorithm: jwt_algorithm, verify_expiration: true
+        payload, header = JWT.decode jwt_token, signing_key, jwt_algorithm != "none", algorithm: jwt_algorithm, verify_expiration: true
 
         %w(data_key iv tag).each do |key| 
           header[key] = Base64.urlsafe_decode64 header[key] rescue ""
